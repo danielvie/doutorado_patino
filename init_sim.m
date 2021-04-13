@@ -25,7 +25,7 @@ function config = init_sim()
       Dc = [0;0];
 
       tmin  = 0.25;
-      xref  = [2;-1];
+      xref  = [2, -1];
       % xref: [vc_ref; il_ref]
 
       Q     = diag([1,1]);
