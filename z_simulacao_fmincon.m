@@ -14,8 +14,8 @@ cores.VERMELHO = [1.00,0.00,0.00];
 % --------------------------------------
 
 Ts  = [0., 0.2514520, 0.5014520];
-dx1 = 0.;
-dx2 = 0.;
+dx1 = 0.0;
+dx2 = 0.0;
 
 config.Ts    = Ts;
 config.x0    = [1.870801, -1.119853] + [dx1,dx2];
@@ -33,6 +33,11 @@ disp('-----------------------------------');
 
 figure(1);
 clf();
+hold on;
+grid on;
+axis equal;
+
+h = plot(config.xref(1), config.xref(2), '+', 'linew', 2, 'markersize', 10, 'color', cores.VERMELHO);
 
 % 'Algorithm': 'active-set', 'interior-point', 'sqp', 'sqp-legacy', 'trust-region-reflective'
 % options = optimoptions('fmincon', 'display', 'iter' , 'DiffMinChange', config.tstep*10, 'Algorithm', 'sqp');
@@ -45,10 +50,10 @@ A   = [];
 b   = [];
 Aeq = [];
 beq = [];
-nonlincon = [];
+% nonlincon = [];
 
-[x, fval] = fmincon(@(x) fun_custo_patino(config, x), x0, A, b, Aeq, beq, lb, ub, nonlincon, options);
-% [x, fval] = fmincon(@(x) fun_custo(config, x), x0, A, b, Aeq, beq, lb, ub, nonlincon, options);
+[x, fval] = fmincon(@(x) fun_custo_patino(config, x), x0, A, b, Aeq, beq, lb, ub, @(x) nonlincon_patino(config, x), options);
+% [x, fval] = fmincon(@(x) fun_custo_patino(config, x), x0, A, b, Aeq, beq, lb, ub, [], options);
 
 % grafico da trajetoria final
 T  = [0, x(1), sum(x(1:2))];
@@ -63,7 +68,6 @@ plot(yf(:,1), yf(:,2), 'k', 'linew', 2);
 % pontos de `xref` e `x0`
 
 plot(config_.x0(1), config_.x0(2), 'o', 'linew', 2, 'color', cores.AZUL);
-h = plot(config_.xref(1), config_.xref(2), '+', 'linew', 2, 'markersize', 10, 'color', cores.VERMELHO);
 
 grid on;
 
@@ -96,9 +100,10 @@ disp(['fval : ', num2str(fval)]);
 % -------------------------------------- 
 nsim = 50;
 
-
-disp(config_.x0);
-y = sim_n(config_, config_.Ts, nsim);
+c = config_;
+c.x0 = c.x0 + [0., 0.];
+disp(c.x0);
+y = sim_n(c, config_.Ts, nsim);
 
 
 figure(2);
@@ -115,7 +120,7 @@ c.x0 = y(end,:);
 yend = sim_1(c, c.Ts);
 
 % ymean = mean(yend);
-% plot(ymean(1), ymean(2), 'o', 'linew', 2, 'markersize', 10, 'color', cores.VERMELHO);
+% plot(ymean(1), ymean(2), 'o', 'linew', 2, 'color', cores.VERMELHO);
 
 plot(yend(:,1), yend(:,2), 'k', 'linew', 2);
 axis equal;
@@ -130,6 +135,18 @@ grid on;
 function Ts = get_ts(x)
     x_ = x(1:2);
     Ts = [0., x_(1), sum(x_)];
+end
+
+function C = get_centroid(y, iter)
+    
+    if ~exist('iter', 'var')
+        iter = 1000;
+    end
+    
+    s    = polyshape(y(1:iter:end,1), y(1:iter:end,2));
+    
+    [cx, cy] = s.centroid;
+    C = [cx, cy];
 end
 
 function J = fun_custo(config, X)
@@ -161,6 +178,31 @@ function J = fun_custo(config, X)
     hold on;
     plot(y(:,1), y(:,2));
     title(sprintf('diff x0: %.4f, %.4f; dT: %.4f, %.4f', e(1), e(2), dT(1), dT(2)));
+end
+
+function [c,ceq] = nonlincon_patino(config, X)
+    % c(x)   <= 0
+    % xeq(x)  = 0
+    
+    % lendo parametros de configuracao
+    dT   = X(1:2);
+    x0   = X(3:4);
+    
+    % ajustando condicao inicial
+    config_ = config;
+    config_.x0 = x0;
+    
+    % montando vetor de tempo e rodando simulacao
+    T  = [0, dT(1), sum(dT)];
+    y  = sim_1(config_, T);
+    
+    e  = config_.x0 - y(end,:);
+    
+    c   = [];
+%     ceq = [];
+    
+    ceq = sum(e.^2);
+    
 end
 
 function J = fun_custo_patino(config, X)
@@ -209,9 +251,11 @@ function J = fun_custo_patino(config, X)
     eref  = config_.xref - ymean;
     
     % calculando funcao custo
-    C  = [I, sum(e.^2), sum(eref.^2)]; % elemantos para soma custo
-    Cn = C.*[1, 10000, 100]; % custo normalizado
-    J  = sum(Cn); % soma custos
-        
+%     C  = [I, sum(eref.^2)]; % elemantos para soma custo
+%     Cn = C.*[1, 10]; % custo ponderado
+%     J  = sum(Cn); % soma custos
+
+    J = I;
+    
     title(sprintf('diff x0: %.4f, %.4f; dT: %.4f, %.4f', e(1), e(2), dT(1), dT(2)));
 end
