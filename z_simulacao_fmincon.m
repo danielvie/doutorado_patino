@@ -41,7 +41,7 @@ h = plot(config.xref(1), config.xref(2), '+', 'linew', 2, 'markersize', 10, 'col
 
 % 'Algorithm': 'active-set', 'interior-point', 'sqp', 'sqp-legacy', 'trust-region-reflective'
 % options = optimoptions('fmincon', 'display', 'iter' , 'DiffMinChange', config.tstep*10, 'Algorithm', 'sqp');
-options = optimoptions('fmincon', 'DiffMinChange', config.tstep*10, 'Algorithm', 'sqp');
+options = optimoptions('fmincon', 'DiffMinChange', config.tstep*10, 'ConstraintTolerance', 1e-8, 'StepTolerance', 1e-8, 'Algorithm', 'active-set');
 % options = optimoptions('fmincon', 'Algorithm', 'active-set');
 x0  = [0.25, 0.25, config.x0];
 lb  = [0.25, 0.25, config.x0 - 2.0];
@@ -137,49 +137,6 @@ function Ts = get_ts(x)
     Ts = [0., x_(1), sum(x_)];
 end
 
-function C = get_centroid(y, iter)
-    
-    if ~exist('iter', 'var')
-        iter = 1000;
-    end
-    
-    s    = polyshape(y(1:iter:end,1), y(1:iter:end,2));
-    
-    [cx, cy] = s.centroid;
-    C = [cx, cy];
-end
-
-function J = fun_custo(config, X)
-    
-    % lendo parametros de configuracao
-    dT = X(1:2);
-    x0 = X(3:4);
-    
-    % montando vetor de tempo e rodando simulacao
-    config_ = config;
-    config_.x0 = x0;
-    
-    Ts = get_ts(dT);
-    y  = sim_1(config_, Ts);
-    
-    % calculando erro
-    e  = config_.x0 - y(end,:);
-    
-    % calculando erro com xref
-    ymean = mean(y);
-    eref  = config_.xref - ymean;
-    
-    % calculando valor de custo
-    % TODO: ajustar estimativa de `eref` para usar no custo
-    J  = sum(e.^2) + sum(eref.^2)*0.05;
-    
-    % grafico de trajetoria
-    figure(1);
-    hold on;
-    plot(y(:,1), y(:,2));
-    title(sprintf('diff x0: %.4f, %.4f; dT: %.4f, %.4f', e(1), e(2), dT(1), dT(2)));
-end
-
 function [c,ceq] = nonlincon_patino(config, X)
     % c(x)   <= 0
     % xeq(x)  = 0
@@ -199,7 +156,6 @@ function [c,ceq] = nonlincon_patino(config, X)
     e  = config_.x0 - y(end,:);
     
     c   = [];
-%     ceq = [];
     
     ceq = sum(e.^2);
     
@@ -226,12 +182,11 @@ function J = fun_custo_patino(config, X)
     figure(1);
     hold on;
     plot(y(:,1), y(:,2));
-    
-        
+            
     % calculando integral erro trajetoria (trapezios)
     ny  = size(y,1);
-    I   = 0;
     dx  = config_.tstep;
+    I   = 0;
     v_  = 0;
     for i = 1:ny
         % gerando valor da funcao
@@ -245,17 +200,7 @@ function J = fun_custo_patino(config, X)
     
     % calculando distancia x0 xfim
     e  = config_.x0 - y(end,:);
-    
-    % calculando erro com xref
-    ymean = mean(y);
-    eref  = config_.xref - ymean;
-    
-    % calculando funcao custo
-%     C  = [I, sum(eref.^2)]; % elemantos para soma custo
-%     Cn = C.*[1, 10]; % custo ponderado
-%     J  = sum(Cn); % soma custos
 
     J = I;
-    
-    title(sprintf('diff x0: %.4f, %.4f; dT: %.4f, %.4f', e(1), e(2), dT(1), dT(2)));
+    title(sprintf('diff x0: %.7f, %.7f; dT: %.7f, %.7f; J: %.7f', e(1), e(2), dT(1), dT(2), J));
 end
