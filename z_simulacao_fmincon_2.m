@@ -3,7 +3,7 @@
 % CONFIG INICIAL
 % --------------------------------------
 clear all
-config = init_sim();
+config = init_sim_2();
 
 cores.AZUL     = [0.00,0.45,0.74];
 cores.VERMELHO = [1.00,0.00,0.00];
@@ -43,6 +43,7 @@ h = plot(config.xref(1), config.xref(2), '+', 'linew', 2, 'markersize', 10, 'col
 % options = optimoptions('fmincon', 'display', 'iter' , 'DiffMinChange', config.tstep*10, 'Algorithm', 'sqp');
 options = optimoptions('fmincon', 'DiffMinChange', config.tstep*10, 'ConstraintTolerance', 1e-8, 'StepTolerance', 1e-8, 'Algorithm', 'active-set');
 % options = optimoptions('fmincon', 'Algorithm', 'active-set');
+
 x0  = [0.25, 0.25, config.x0];
 lb  = [0.25, 0.25, config.x0 - 2.0];
 ub  = [1.50, 1.50, config.x0 + 2.0];
@@ -103,7 +104,7 @@ nsim = 50;
 c = config_;
 c.x0 = c.x0 + [0., 0.];
 disp(c.x0);
-[y,t,u] = sim_n(c, config_.Ts, nsim);
+y = sim_n(c, config_.Ts, nsim);
 
 
 figure(2);
