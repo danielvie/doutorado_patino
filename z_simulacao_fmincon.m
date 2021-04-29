@@ -3,7 +3,7 @@
 % CONFIG INICIAL
 % --------------------------------------
 clear all
-config = init_sim();
+config = init_sim_1();
 
 cores.AZUL     = [0.00,0.45,0.74];
 cores.VERMELHO = [1.00,0.00,0.00];
@@ -56,13 +56,11 @@ beq = [];
 % [x, fval] = fmincon(@(x) fun_custo_patino(config, x), x0, A, b, Aeq, beq, lb, ub, [], options);
 
 % grafico da trajetoria final
-T  = [0, x(1), sum(x(1:2))];
-
 config_    = config;
 
 config_.Ts = get_ts(x(1:2));
 config_.x0 = x(3:4);
-yf = sim_1(config_, T);
+yf = sim_1(config_);
 plot(yf(:,1), yf(:,2), 'k', 'linew', 2);
 
 % pontos de `xref` e `x0`
@@ -103,8 +101,7 @@ nsim = 50;
 c = config_;
 c.x0 = c.x0 + [0., 0.];
 disp(c.x0);
-[y,t,u] = sim_n(c, config_.Ts, nsim);
-
+[y,t,u] = sim_n(c, nsim);
 
 figure(2);
 clf();
@@ -117,7 +114,7 @@ plot(config.xref(1), config.xref(2), '+', 'linew', 2, 'markersize', 10, 'color',
 % ultimo ciclo
 c    = config_;
 c.x0 = y(end,:);
-yend = sim_1(c, c.Ts);
+yend = sim_1(c);
 
 % ymean = mean(yend);
 % plot(ymean(1), ymean(2), 'o', 'linew', 2, 'color', cores.VERMELHO);
@@ -150,8 +147,8 @@ function [c,ceq] = nonlincon_patino(config, X)
     config_.x0 = x0;
     
     % montando vetor de tempo e rodando simulacao
-    T  = [0, dT(1), sum(dT)];
-    y  = sim_1(config_, T);
+    config_.Ts = [0, dT(1), sum(dT)];
+    y  = sim_1(config_);
     
     e  = config_.x0 - y(end,:);
     
@@ -175,8 +172,8 @@ function J = fun_custo_patino(config, X)
     config_.x0 = x0;
     
     % montando vetor de tempo e rodando simulacao
-    T  = [0, dT(1), sum(dT)];
-    y  = sim_1(config_, T);
+    config_.Ts = [0, dT(1), sum(dT)];
+    y  = sim_1(config_);
     
     % grafico trajetorias
     figure(1);

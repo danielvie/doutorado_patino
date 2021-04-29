@@ -43,6 +43,12 @@ function config = init_sim_1()
       config.Cc = Cc;
       config.Dc = Dc;
 
+      config.modes  = [0, 1]; % modo de operacao
+      config.ur     = [1, 0]; % controle associado com modo
+      
+      config.Ac = {A1, A2};
+      config.Bc = {B1, B2};
+      
       config.tstep = tstep;
       config.xref  = xref;
       config.tmin  = tmin;

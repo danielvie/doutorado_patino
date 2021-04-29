@@ -1,29 +1,41 @@
-function [y,t,u] = sim_1(config, Ts)
-    
-    A1 = config.A1;
-    A2 = config.A2;
-    B1 = config.B1;
-    B2 = config.B2;
-    Cc = config.Cc;
-    Dc = config.Dc;
-    
+function [y,t,u] = sim_1(config)
+
+    % lendo configuracoes
+    Cc    = config.Cc;
+    Dc    = config.Dc;
     tstep = config.tstep;
     x0    = config.x0;
-    
-    ur  = [1, 0];
+    Ts    = config.Ts;
 
-    % ciclo 1
-    t1 = Ts(1):tstep:Ts(2)-tstep;
-    u1 = ones(size(t1))*ur(1);
-    y1 = lsim(A1,B1,Cc,Dc,u1,t1-t1(1),x0);
-
-    % ciclo 2
-    t2 = Ts(2):tstep:Ts(3)-tstep;
-    u2 = ones(size(t2))*ur(2);
-    y2 = lsim(A2,B2,Cc,Dc,u2,t2-t2(1),y1(end, :));
+    % simulando com parametros flexiveis
+    n_modes = numel(config.modes);
     
-    t  = [t1,t2]';
-    u  = [u1,u2]';
-    y  = [y1;y2];    
+    % inicializando saida    
+    t = [];
+    u = [];
+    y = [];
     
+    xi0 = x0;
+    for i = 1:n_modes
+        % lendo modo de operacao (indice do modo inicia em `0`)
+        imode = config.modes(i) + 1;
+        
+        % lendo matrizes A e B 
+        Ai = config.Ac{imode};
+        Bi = config.Bc{imode};
+        
+        % calculando ciclo
+        ti = (Ts(i):tstep:Ts(i+1)-tstep)';
+        ui = ones(size(ti))*config.ur(imode);
+        
+        yi  = lsim(Ai,Bi,Cc,Dc,ui,ti-ti(1),xi0);
+        xi0 = yi(end, :);
+        
+        % concatenando resultado da iteraco
+        t = [t; ti];
+        u = [u; ui];
+        y = [y; yi];
+    end
+    
+    bla = 1;
 end
