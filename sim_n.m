@@ -1,5 +1,5 @@
 % [y,t,u] = sim_n(config, Ts)
-function [y,t,u] = sim_n(config, Ts, nsim)
+function [y,t,u] = sim_n(config, nsim)
     
     config_ = config;
     y   = [];
@@ -14,7 +14,7 @@ function [y,t,u] = sim_n(config, Ts, nsim)
         % dtk = mpc_dualmode_switching(ek,H,Hf,Phi1Np,Qbar,Rbar,Lbar,cbar,Pf,Sf,bf,PhiNp,p);
 
         % simulando dinamica
-        [y_,t_,u_] = sim_1(config_, Ts);
+        [y_,t_,u_] = sim_1(config_);
         config_.x0 = y_(end,:)';
 
         y   = [y;y_];
