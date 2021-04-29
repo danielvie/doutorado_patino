@@ -3,7 +3,7 @@
 % CONFIG
 % --------------------------------------
 
-function config = init_sim()
+function config = init_sim_1()
       % equacoes de estado Buck-Boost converter
       R = 1;
       L = 1;
