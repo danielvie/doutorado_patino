@@ -15,10 +15,16 @@
         Mostrar como impus a restricao de condicao inicial 
         (talvez tenha que ajustar algum parametro de tolerancia)
 
-- [ ] implementar caso com mais modos de controle (2o caso artigo)
+- [x] implementar caso com mais modos de controle (2o caso artigo)
 
 ## 27/04
 
-- [ ] implementar ex. 2
+- [x] implementar ex. 2
 
 - [ ] documentar trabalhos
+
+## 14/05
+
+- [ ] implementar calculo de condicao inicial no otmizador
+
+- [ ] calcular caso 2 com implementacao

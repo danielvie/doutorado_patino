@@ -34,8 +34,6 @@ function config = init_sim_1()
       r     = 1;
       % r: 
 
-      tstep = 0.0001;
-
       config.A1 = A1;
       config.A2 = A2;
       config.B1 = B1;
@@ -49,12 +47,14 @@ function config = init_sim_1()
       config.Ac = {A1, A2};
       config.Bc = {B1, B2};
       
-      config.tstep = tstep;
+      config.tstep = 1e-5;
       config.xref  = xref;
       config.tmin  = tmin;
       config.Q     = Q;
       config.Tpmax = Tpmax;
       config.smax  = smax;
       config.r     = r;
-            
+      
+      config.x0    = [1.870801, -1.119853];
+      config.Ts    = [0., 0.2514520, 0.5014520];
 end
