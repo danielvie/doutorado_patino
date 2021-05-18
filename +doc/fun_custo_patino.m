@@ -5,20 +5,18 @@ function J = fun_custo_patino(config, X)
     Q    = config.Q;
     
     nmodes = numel(config.modes);
-    nstate = numel(config.xref);
     
     dT   = X(1:nmodes);
-    x0   = X(nmodes+1:nmodes+nstate);
+%     x0   = X(nmodes+1:nmodes+nstate);
+
+    % montando vetor de tempo e rodando simulacao
+    Ts = doc.get_ts(dT);    
+
+    x0 = doc.get_x0(config, Ts);
     
     % ajustando condicao inicial
     config_ = config;
     config_.x0 = x0;
-    
-    % montando vetor de tempo e rodando simulacao
-    Ts = zeros(1, numel(dT) + 1);
-    for i = 2:numel(Ts)
-        Ts(i) = Ts(i-1) + dT(i-1);
-    end
     
     config_.Ts = Ts;
     y  = doc.sim_1(config_);
@@ -27,6 +25,7 @@ function J = fun_custo_patino(config, X)
     
     if size(y_, 2) > 2
         figure(4);
+        subplot(1,3,1);
         plot(y_(:,1), y_(:,2)); hold on;
         plot(y_(1,1), y_(1,2), 's');
         plot(y_(end,1), y_(end,2), 'o');
@@ -36,7 +35,7 @@ function J = fun_custo_patino(config, X)
         grid on;
         hold off;
 
-        figure(5);
+        subplot(1,3,2);
         plot(y_(:,1), y_(:,3)); hold on;
         plot(y_(1,1), y_(1,3), 's');
         plot(y_(end,1), y_(end,3), 'o');
@@ -46,7 +45,7 @@ function J = fun_custo_patino(config, X)
         grid on;
         hold off;
 
-        figure(6);
+        subplot(1,3,3);
         plot(y_(:,2), y_(:,3)); hold on;
         plot(y_(1,2), y_(1,3), 's');
         plot(y_(end,2), y_(end,3), 'o');
@@ -55,6 +54,14 @@ function J = fun_custo_patino(config, X)
         title('Tensao C2 vs Corrente Il')
         grid on;
         hold off;
+        
+        figure(5);
+        plot3(y_(:,1), y_(:,2), y_(:,3), 'k');
+        hold on;
+        plot3(y_(1,1), y_(1,2), y_(1,3), 'ro');
+        plot3(y_(end,1), y_(end,2), y_(end,3), 'ks');
+        hold off;
+        grid on;
     end
     
     % axis([-0.1, 2, -0.1, 2, -0.2, 0.2]);

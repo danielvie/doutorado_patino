@@ -25,9 +25,12 @@ ndt    = numel(config.Ts) - 1;
 
 tmin   = 0.022*1e-3;
 tmax   = 0.400*1e-3;
-x0     = [diff(config.Ts), config.x0];
-lb     = [ones(1, ndt)*0.022*1e-3, config.x0 - [1, 1, 0.1]];
-ub     = [ones(1, ndt)*0.088*1e-3, config.x0 + [1, 1, 0.1]];
+% x0     = [diff(config.Ts), config.x0];
+% lb     = [ones(1, ndt)*0.022*1e-3, config.x0 - [1, 1, 0.1]];
+% ub     = [ones(1, ndt)*0.088*1e-3, config.x0 + [1, 1, 0.1]];
+x0     = diff(config.Ts);
+lb     = ones(1, ndt)*0.022*1e-3;
+ub     = ones(1, ndt)*0.088*1e-3;
 A      = [];
 b      = [];
 Aeq    = [];
@@ -37,7 +40,12 @@ beq    = [];
 figure(5);
 clf();
 
-[x, fval] = fmincon(@(x) doc.fun_custo_patino(config, x), x0, A, b, Aeq, beq, lb, ub, @(x) doc.nonlincon_patino(config, x), opt);
+[x, fval] = fmincon(@(x) doc.fun_custo_patino(config, x), x0, A, b, Aeq, beq, lb, ub, [], opt);
+
+% atualizando valores
+dT = x;
+config.Ts = doc.get_ts(dT);
+config.x0 = doc.get_x0(config, Ts);
 
 %%
 % --------------------------------------
@@ -47,7 +55,7 @@ nsim = 50;
 
 config_ = config;
 
-config_.x0 = config.xref;
+% config_.x0 = x0;
 % [y,t,u] = sim_1(config_);
 
 [y, t] = doc.sim_n(config_, nsim);
@@ -61,8 +69,6 @@ plot(t, y(:,2));
 
 figure(3);
 plot(t, y(:,3));
-
-
 
 figure(7);
 y1 = doc.sim_n(config_, 1);
